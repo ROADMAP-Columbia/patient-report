@@ -8,7 +8,15 @@
 #
 
 library(shiny)
+library(bslib)
+library(knitr)
+library(readxl)
+library(nlme)
+library(knitr)
 library(DT)
+library(ggplot2)
+library(ggthemes)
+library(plotly)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -35,7 +43,9 @@ shinyUI(fluidPage(
                                      Semicolon = ";",
                                      Tab = "\t"),
                          selected = ","),
-            selectInput("select", "Select columns to display", "Nothing", multiple = TRUE),
+            selectInput("date", "Select date column", "Nothing"),
+            selectInput("treatment", "Select treatment column", "Nothing"),
+            selectInput("outcome", "Select outcomes (can be multiple)", "Nothing", multiple = TRUE),
             selectInput("patient", "Select patient", "Upload data!"),
             actionButton("update", "Update Data set", class = "btn-primary",style='padding:4px; font-size:120%')
         ),
@@ -44,7 +54,15 @@ shinyUI(fluidPage(
         mainPanel(
             h2('Data'),
             #tableOutput("mytable")
-            DT::dataTableOutput("mytable")
+            DT::dataTableOutput("mytable"), 
+            
+            h5("AR(1) model analysis with treatment effects"),
+            dataTableOutput("values"),
+            
+            h5("AR(1) model analysis with treatment effects"),
+            dataTableOutput("values1"), 
+            
+            uiOutput("plots")
             
         )
         )
