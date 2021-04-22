@@ -8,7 +8,7 @@
 #
 
 library(shiny)
-library(bslib)
+library(dplyr)
 library(readxl)
 library(nlme)
 library(knitr)
@@ -48,7 +48,7 @@ shinyServer(function(session, input, output) {
     })
     
     observeEvent(data(), {
-        updateSelectInput(session, "outcome", choices = colnames(data()), selected = c("Pain_Intensity_Summary"))
+        updateSelectInput(session, "outcome", choices = colnames(data()), selected = c("emap", "emaf", "emas"))
     })
     
     observeEvent(data(), {
@@ -65,7 +65,7 @@ shinyServer(function(session, input, output) {
             filter(Treatment != "Baseline")
         
         
-        fit <- gls(model       = as.numeric(Pain_Intensity_Summary) ~ Treatment, 
+        fit <- gls(model       = as.numeric(emap) ~ Treatment, 
                    correlation = corAR1(form = ~1),
                    subset      = which(Treatment != "Baseline"),
                    control     = list(singular.ok = TRUE),
@@ -73,9 +73,9 @@ shinyServer(function(session, input, output) {
                    data        = df)
         
         data.frame(
-            Output        = c("Pain Intensity Summary averaged during Usual Care",
-                              "Pain Intensity Summary averaged increased during Yoga",
-                              "Pain Intensity Summary averaged increased during Massage"),
+            Output        = c("Mean EMA pain averaged during usual care",
+                              "Mean EMA pain averaged increased during yoga",
+                              "Mean EMA pain averaged increased during massage"),
             Estimate      = c(round(summary(fit)$tTable[, 1], 2)),
             `p-value`     = c("-", round(summary(fit)$tTable[-1, 4], 2)))
     })
@@ -90,7 +90,7 @@ shinyServer(function(session, input, output) {
             filter(Treatment != "Baseline")
         
         
-        fit <- gls(model       = as.numeric(Pain_Interference_Summary) ~ Treatment, 
+        fit <- gls(model       = as.numeric(emaf) ~ Treatment, 
                    correlation = corAR1(form = ~1),
                    subset      = which(Treatment != "Baseline"),
                    control     = list(singular.ok = TRUE),
@@ -98,9 +98,33 @@ shinyServer(function(session, input, output) {
                    data        = df)
         
         data.frame(
-            Output        = c("Pain Interference Summary averaged during Usual Care",
-                              "Pain Interference Summary averaged increased during Yoga",
-                              "Pain Interference Summary averaged increased during Massage"),
+            Output        = c("Mean EMA fatigue averaged during usual care",
+                              "Mean EMA fatigue averaged increased during yoga",
+                              "Mean EMA fatigue averaged increased during massage"),
+            Estimate      = c(round(summary(fit)$tTable[, 1], 2)),
+            `p-value`     = c("-", round(summary(fit)$tTable[-1, 4], 2)))
+    })
+    
+    sliderValues2 <- reactive({
+        df <- filtereddata() %>%
+            mutate(Treatment = factor(Assigned.Treatment, levels = c("Baseline", "Usual Care", "Yoga", "Massage")))
+        
+        df <- df %>%
+            group_by(Date, Treatment) %>% 
+            filter(Treatment != "Baseline")
+        
+        
+        fit <- gls(model       = as.numeric(emas) ~ Treatment, 
+                   correlation = corAR1(form = ~1),
+                   subset      = which(Treatment != "Baseline"),
+                   control     = list(singular.ok = TRUE),
+                   na.action   = na.omit, 
+                   data        = df)
+        
+        data.frame(
+            Output        = c("Mean EMA stress averaged during usual care",
+                              "Mean EMA stress averaged increased during yoga",
+                              "Mean EMA stress averaged increased during massage"),
             Estimate      = c(round(summary(fit)$tTable[, 1], 2)),
             `p-value`     = c("-", round(summary(fit)$tTable[-1, 4], 2)))
     })
@@ -109,7 +133,7 @@ shinyServer(function(session, input, output) {
     output$plots <- renderUI({
         plot_output_list <- lapply(1:length(input$outcome), function(i) {
             plotname <- paste("plot", i, sep="")
-            plotOutput(plotname, height = 280, width = 250)
+            plotOutput(plotname, height = 500, width = 750)
         })
         
         # Convert the list to a tagList - this is necessary for the list of items
@@ -130,23 +154,24 @@ shinyServer(function(session, input, output) {
         
         data <- data[data$Id == input$patient, colnames(data) %in% c(input$date, input$treatment, input$outcome)]
         
+        data <- data %>% 
+            mutate_at(input$outcome, as.numeric) %>%
+            mutate(Treatment = factor(input$treatment, levels = c("Baseline", "Usual Care", "Yoga", "Massage")))
+            #group_by(input$date, Treatment) %>% 
+        
         df <- data[, colnames(data) %in% c(input$outcome)]
         
-        for (i in 1:mp) {
+        for (i in colnames(df)) {
             # Need local so that each item gets its own number. Without it, the value
             # of i in the renderPlot() will be the same across all instances, because
             # of when the expression is evaluated.
             local({
-                my_i <- i
-                plotname <- paste("plot", my_i, sep="")
+                plotname <- paste("plot", i, sep="")
                 
-                output[[plotname]] <- renderPlotly({
-                    print(
-                        ggplotly(
-                            ggplot(data = data, aes(x = Date, y = names(df)[i])) + 
-                                geom_line() +
-                                ylab("Total Steps (per day)")  +
-                                theme_gdocs()))
+                output[[plotname]] <- renderPlot({
+                    ggplot(data = data, aes_string(x = "Date", y = i)) + 
+                        geom_point() +
+                        geom_line(aes(group = 1)) 
                     
                     
                     
@@ -180,6 +205,17 @@ shinyServer(function(session, input, output) {
     
     output$values1 <- renderDataTable({
         sliderValues1() 
+    }, extensions = 'Buttons', 
+    options = list(
+        initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+            "}"),
+        dom = 'Bfrtip',
+        buttons = c('copy', 'csv', 'excel', 'pdf', 'print')), rownames= FALSE)
+    
+    output$values2 <- renderDataTable({
+        sliderValues2() 
     }, extensions = 'Buttons', 
     options = list(
         initComplete = JS(
