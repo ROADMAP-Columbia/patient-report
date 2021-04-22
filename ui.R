@@ -62,6 +62,9 @@ shinyUI(fluidPage(
             h5("AR(1) model analysis with treatment effects"),
             dataTableOutput("values1"), 
             
+            h5("AR(1) model analysis with treatment effects"),
+            dataTableOutput("values2"), 
+            
             uiOutput("plots")
             
         )
