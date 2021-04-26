@@ -16,7 +16,7 @@ library(DT)
 shinyUI(fluidPage(
     
     # Application title
-    titlePanel("CLBP Patient Report"),
+    titlePanel("Patient Report"),
     
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
