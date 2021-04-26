@@ -44,7 +44,7 @@ shinyServer(function(session, input, output) {
     })
     
     observeEvent(data(), {
-        updateSelectInput(session, "outcome", choices = colnames(data()), selected = c("emap", "emaf", "emas"))
+        updateSelectInput(session, "outcome", choices = colnames(data()), selected = c("Mean_Daily_EMApain", "Mean_Daily_EMAfatigue", "Mean_Daily_EMAstress"))
     })
     
     observeEvent(data(), {
@@ -58,7 +58,8 @@ shinyServer(function(session, input, output) {
         
         df <- df %>%
             group_by(Date, Treatment) %>% 
-            filter(Treatment != "Baseline")
+            filter(Treatment != "Baseline") %>%
+            mutate(emap = Mean_Daily_EMApain)
         
         
         fit <- gls(model       = as.numeric(emap) ~ Treatment, 
@@ -83,7 +84,8 @@ shinyServer(function(session, input, output) {
         
         df <- df %>%
             group_by(Date, Treatment) %>% 
-            filter(Treatment != "Baseline")
+            filter(Treatment != "Baseline") %>%
+            mutate(emaf = Mean_Daily_EMAfatigue)
         
         
         fit <- gls(model       = as.numeric(emaf) ~ Treatment, 
@@ -107,7 +109,8 @@ shinyServer(function(session, input, output) {
         
         df <- df %>%
             group_by(Date, Treatment) %>% 
-            filter(Treatment != "Baseline")
+            filter(Treatment != "Baseline") %>%
+            mutate(emas = Mean_Daily_EMAstress)
         
         
         fit <- gls(model       = as.numeric(emas) ~ Treatment, 
