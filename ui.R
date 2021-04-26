@@ -8,15 +8,9 @@
 #
 
 library(shiny)
-library(bslib)
-library(knitr)
-library(readxl)
 library(nlme)
-library(knitr)
 library(DT)
-library(ggplot2)
-library(ggthemes)
-library(plotly)
+
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(

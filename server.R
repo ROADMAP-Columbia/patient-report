@@ -9,13 +9,9 @@
 
 library(shiny)
 library(dplyr)
-library(readxl)
 library(nlme)
-library(knitr)
 library(DT)
-library(ggplot2)
-library(ggthemes)
-library(plotly)
+
 
 
 # Define server logic required to draw a histogram
