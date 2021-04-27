@@ -1,13 +1,13 @@
-# Backpain-shiny
+# Patient report
 
 
-Run backpain through Shiny app. 
+Run patient report through Shiny app. 
 
 Required packages: dplyr, nlme, DT
 
 To download:
 
-install.packages(c("dplyr, nlme", "DT"))
+install.packages(c("dplyr", "nlme", "DT"))
 
 
 ## To launch this Shiny app:
