@@ -14,12 +14,12 @@ install.packages(c("dplyr", "nlme", "DT"))
 
 library(shiny)
 
-runGitHub('ROADMAP-Columbia/backpain-shiny')
+runGitHub('ROADMAP-Columbia/patient-report')
 
 ## Last update was 4-26-2021
 ##### Otherwise, download the previous verion of this under the Release page, unzip the package, then access by typing:
 
 library(shiny)
 
-runApp("pathToOlderVersionOfbackpain-shiny/backpain-shiny")
+runApp("pathToOlderVersionOfpatient-report/patient-report")
 
