@@ -153,6 +153,7 @@ shinyServer(function(session, input, output) {
         
         data <- data[data$Id == input$patient, colnames(data) %in% c(input$date, input$treatment, input$outcome)]
         
+        
         data <- data %>% 
             mutate_at(input$outcome, as.numeric) %>%
             mutate(Treatment = factor(input$treatment, levels = c("Baseline", "Usual Care", "Yoga", "Massage")))
@@ -188,7 +189,9 @@ shinyServer(function(session, input, output) {
     
     
     
-    output$mytable  <- renderDataTable(filtereddata())
+    output$mytable  <- renderDataTable({ datatable(filtereddata()) %>% 
+        formatRound(columns = c(2:4), digits = 2)})
+    
     
     # Show the values in an HTML table ----
     output$values <- renderDataTable({
